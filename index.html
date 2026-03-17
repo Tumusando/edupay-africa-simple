@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>EduPay Africa</title>
+
+  <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+  <script>
+    Pi.init({ version: "2.0" });
+  </script>
+
+</head>
+
+<body>
+
+  <h1>EduPay Africa</h1>
+  <p>Pay School Fees with Pi</p>
+
+  <button onclick="login()">Login with Pi</button>
+  <br><br>
+
+  <button onclick="pay()">Pay with Pi</button>
+
+  <script>
+    async function login() {
+      const scopes = ['username', 'payments'];
+
+      function onIncompletePaymentFound(payment) {
+        console.log(payment);
+      }
+
+      const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
+      alert("Welcome " + auth.user.username);
+    }
+
+    function pay() {
+      const paymentData = {
+        amount: 1,
+        memo: "School Fees Payment",
+        metadata: { student: "1234" }
+      };
+
+      Pi.createPayment(paymentData);
+    }
+  </script>
+
+</body>
+</html>
