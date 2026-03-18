@@ -10,7 +10,6 @@
       sandbox: true
     });
   </script>
-
 </head>
 
 <body>
@@ -44,16 +43,31 @@
 
       const callbacks = {
         onReadyForServerApproval: function(paymentId) {
-          console.log("Ready for approval", paymentId);
+          fetch("https://edupay-africa-backend.vercel.app/api/approve", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ paymentId })
+          });
         },
+
         onReadyForServerCompletion: function(paymentId, txid) {
-          console.log("Ready for completion", paymentId, txid);
+          fetch("https://edupay-africa-backend.vercel.app/api/complete", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ paymentId, txid })
+          });
         },
+
         onCancel: function(paymentId) {
-          console.log("Payment cancelled", paymentId);
+          alert("Payment cancelled");
         },
-        onError: function(error, payment) {
-          console.log("Error", error);
+
+        onError: function(error) {
+          console.log("Error:", error);
         }
       };
 
