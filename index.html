@@ -42,7 +42,22 @@
         metadata: { student: "1234" }
       };
 
-      Pi.createPayment(paymentData);
+      const callbacks = {
+        onReadyForServerApproval: function(paymentId) {
+          console.log("Ready for approval", paymentId);
+        },
+        onReadyForServerCompletion: function(paymentId, txid) {
+          console.log("Ready for completion", paymentId, txid);
+        },
+        onCancel: function(paymentId) {
+          console.log("Payment cancelled", paymentId);
+        },
+        onError: function(error, payment) {
+          console.log("Error", error);
+        }
+      };
+
+      Pi.createPayment(paymentData, callbacks);
     }
   </script>
 
