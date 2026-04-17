@@ -12,23 +12,29 @@ import { OnlineCoursesPreview } from "@/components/online-courses-preview"
 import { Footer } from "@/components/footer"
 import { LiveChatWidget } from "@/components/live-chat-widget"
 
-export default function HomePage() {
+export default function Page() {
   return (
     <div className="min-h-screen bg-background">
       <MobileNav />
+
       <main className="pb-24 md:pb-20">
         <HeroSection />
         <StudentRegistration />
         <OnlineCoursesPreview />
+
         <div id="services">
           <ServicesManager />
         </div>
+
         <StatsSection />
+
         <div id="features">
           <FeaturesSection />
         </div>
+
         <CTASection />
       </main>
+
       <Footer />
       <QuickActionsBar />
       <LiveChatWidget />
