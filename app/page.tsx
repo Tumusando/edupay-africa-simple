@@ -5,12 +5,14 @@ import { useEffect } from "react";
 export default function Page() {
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.Pi) {
+    if (window.Pi) {
       window.Pi.init({
         version: "2.0",
-        sandbox: true   // VERY IMPORTANT for testnet
+        sandbox: true
       });
-      console.log("Pi initialized");
+      console.log("Pi SDK initialized");
+    } else {
+      console.log("Pi SDK not loaded");
     }
   }, []);
 
@@ -19,20 +21,20 @@ export default function Page() {
       const scopes = ["username", "payments"];
 
       const auth = await window.Pi.authenticate(scopes, function(payment) {
-        console.log("Payment callback", payment);
+        console.log("Payment", payment);
       });
 
       alert("Welcome " + auth.user.username);
 
-    } catch (error) {
-      console.error(error);
-      alert("Login failed");
+    } catch (e) {
+      console.error(e);
+      alert("Authentication failed");
     }
   };
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>EduPay Test 🚀</h1>
+      <h1>EduPay Africa 🚀</h1>
 
       <button onClick={login}>
         Login with Pi
