@@ -29,7 +29,7 @@ export default function HomePage() {
       if (window.Pi) {
         window.Pi.init({
           version: "2.0",
-          sandbox: true,
+          sandbox: false,
         })
         console.log("Pi SDK initialized")
         clearInterval(interval)
