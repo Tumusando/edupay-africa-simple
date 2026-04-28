@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
+// Pi global type fix
 declare global {
   interface Window {
     Pi: any;
   }
 }
 
-// 👉 Import UI yawe
+// UI Components
 import { HeroSection } from "@/components/hero-section";
 import { ServicesManager } from "@/components/services-manager";
 import { StatsSection } from "@/components/stats-section";
@@ -22,8 +23,9 @@ import { Footer } from "@/components/footer";
 import { LiveChatWidget } from "@/components/live-chat-widget";
 
 export default function HomePage() {
+  const [username, setUsername] = useState<string | null>(null);
 
-  // ✅ Pi SDK init
+  // 🔥 Init Pi SDK
   useEffect(() => {
     const waitForPi = setInterval(() => {
       if (window.Pi) {
@@ -39,7 +41,7 @@ export default function HomePage() {
     return () => clearInterval(waitForPi);
   }, []);
 
-  // 🔐 Login
+  // 🔐 Login function
   const handleLogin = async () => {
     try {
       if (!window.Pi) {
@@ -54,7 +56,9 @@ export default function HomePage() {
         }
       );
 
-      alert("Welcome " + auth.user.username);
+      console.log("Auth:", auth);
+
+      setUsername(auth.user.username);
 
     } catch (err) {
       console.error(err);
@@ -64,11 +68,29 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-background">
+
       <MobileNav />
 
-      {/* 🔥 Login button */}
+      {/* 🔥 Welcome message */}
       <div style={{ textAlign: "center", padding: 20 }}>
-        <button onClick={handleLogin}>
+        <h2>
+          {username
+            ? `Welcome to EduPay Africa, ${username} 👋`
+            : "Login to continue"}
+        </h2>
+
+        <button
+          onClick={handleLogin}
+          style={{
+            padding: "12px 20px",
+            marginTop: 10,
+            background: "#6c5ce7",
+            color: "#fff",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
           Login with Pi
         </button>
       </div>
