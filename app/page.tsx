@@ -1,112 +1,82 @@
-"use client"
+"use client";
 
-import { useEffect } from "react"
+import { useEffect } from "react";
 
-// 👉 Pi type (to avoid TypeScript errors)
+// 👉 avoid TypeScript error
 declare global {
   interface Window {
-    Pi: any
+    Pi: any;
   }
 }
 
-import { HeroSection } from "@/components/hero-section"
-import { ServicesManager } from "@/components/services-manager"
-import { StatsSection } from "@/components/stats-section"
-import { FeaturesSection } from "@/components/features-section"
-import { CTASection } from "@/components/cta-section"
-import { MobileNav } from "@/components/mobile-nav"
-import { QuickActionsBar } from "@/components/quick-actions-bar"
-import { StudentRegistration } from "@/components/student-registration"
-import { OnlineCoursesPreview } from "@/components/online-courses-preview"
-import { Footer } from "@/components/footer"
-import { LiveChatWidget } from "@/components/live-chat-widget"
-
 export default function HomePage() {
 
-  // ✅ Initialize Pi SDK safely
+  // 🔥 Initialize Pi SDK
   useEffect(() => {
-    const interval = setInterval(() => {
+    const waitForPi = setInterval(() => {
       if (window.Pi) {
         window.Pi.init({
           version: "2.0",
           sandbox: true,
-        })
-        console.log("Pi SDK initialized")
-        clearInterval(interval)
+        });
+        console.log("Pi SDK initialized");
+        clearInterval(waitForPi);
       }
-    }, 500)
+    }, 500);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(waitForPi);
+  }, []);
 
-  // ✅ Login function
+  // 🔐 Login function
   const handleLogin = async () => {
     try {
       if (!window.Pi) {
-        alert("Pi SDK not loaded yet")
-        return
+        alert("Pi SDK not ready");
+        return;
       }
 
-      const scopes = ["username", "payments"]
+      const scopes = ["username", "payments"];
 
       const auth = await window.Pi.authenticate(
         scopes,
-        (payment: any) => {
-          console.log("Incomplete payment found:", payment)
+        function onIncompletePaymentFound(payment: any) {
+          console.log("Incomplete payment:", payment);
         }
-      )
+      );
 
-      alert("Welcome " + auth.user.username)
+      console.log("Auth result:", auth);
 
-    } catch (error) {
-      console.error("Pi login error:", error)
-      alert("Authentication failed")
+      if (auth?.user?.username) {
+        alert("Welcome " + auth.user.username);
+      } else {
+        alert("No user returned");
+      }
+
+    } catch (err) {
+      console.error("Auth error:", err);
+      alert("Authentication failed");
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-background">
-      <MobileNav />
+    <div style={{ padding: 40, textAlign: "center" }}>
+      <h1>EduPay Africa 🚀</h1>
+      <p>Pi Login Test</p>
 
-      {/* 🔥 IMPORTANT: Pi Login Button */}
-      <div style={{ padding: 20, textAlign: "center" }}>
-        <button
-          onClick={handleLogin}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            borderRadius: "8px",
-            backgroundColor: "#4CAF50",
-            color: "white",
-            border: "none",
-            cursor: "pointer"
-          }}
-        >
-          Login with Pi
-        </button>
-      </div>
-
-      <main className="pb-24 md:pb-20">
-        <HeroSection />
-        <StudentRegistration />
-        <OnlineCoursesPreview />
-
-        <div id="services">
-          <ServicesManager />
-        </div>
-
-        <StatsSection />
-
-        <div id="features">
-          <FeaturesSection />
-        </div>
-
-        <CTASection />
-      </main>
-
-      <Footer />
-      <QuickActionsBar />
-      <LiveChatWidget />
+      <button
+        onClick={handleLogin}
+        style={{
+          padding: "12px 20px",
+          fontSize: "16px",
+          borderRadius: "8px",
+          backgroundColor: "#6c5ce7",
+          color: "#fff",
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        Login with Pi
+      </button>
     </div>
-  )
+  );
 }
