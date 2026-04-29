@@ -2,14 +2,13 @@
 
 import { useEffect, useState } from "react";
 
-// Pi global type fix
 declare global {
   interface Window {
     Pi: any;
   }
 }
 
-// UI Components
+// UI Components (usanzwe ukoresha)
 import { HeroSection } from "@/components/hero-section";
 import { ServicesManager } from "@/components/services-manager";
 import { StatsSection } from "@/components/stats-section";
@@ -24,28 +23,40 @@ import { LiveChatWidget } from "@/components/live-chat-widget";
 
 export default function HomePage() {
   const [username, setUsername] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  // 🔥 Init Pi SDK
+  // 🔥 Init Pi SDK + restore session
   useEffect(() => {
     const waitForPi = setInterval(() => {
       if (window.Pi) {
         window.Pi.init({
           version: "2.0",
-          sandbox: true,
+          sandbox: true, // ugumane true muri sandbox
         });
         console.log("Pi SDK initialized");
         clearInterval(waitForPi);
       }
     }, 500);
 
+    // restore saved user (if any)
+    const saved = localStorage.getItem("pi_user");
+    if (saved) setUsername(saved);
+
     return () => clearInterval(waitForPi);
   }, []);
 
-  // 🔐 Login function
+  // 🔐 Login (RESET mbere yo authenticate)
   const handleLogin = async () => {
     try {
+      setLoading(true);
+
+      // 🔥 important: clear previous session
+      setUsername(null);
+      localStorage.removeItem("pi_user");
+
       if (!window.Pi) {
         alert("Pi SDK not ready");
+        setLoading(false);
         return;
       }
 
@@ -56,45 +67,77 @@ export default function HomePage() {
         }
       );
 
-      console.log("Auth:", auth);
+      const user = auth?.user?.username;
 
-      setUsername(auth.user.username);
-
+      if (user) {
+        setUsername(user);
+        localStorage.setItem("pi_user", user);
+        console.log("Logged in as:", user);
+      } else {
+        alert("Login failed: no user");
+      }
     } catch (err) {
-      console.error(err);
+      console.error("Auth error:", err);
       alert("Authentication failed");
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // 🔓 Logout (for next user)
+  const handleLogout = () => {
+    setUsername(null);
+    localStorage.removeItem("pi_user");
+    alert("Logged out");
   };
 
   return (
     <div className="min-h-screen bg-background">
-
       <MobileNav />
 
-      {/* 🔥 Welcome message */}
+      {/* 🔥 AUTH AREA */}
       <div style={{ textAlign: "center", padding: 20 }}>
-        <h2>
-          {username
-            ? `Welcome to EduPay Africa, ${username} 👋`
-            : "Login to continue"}
-        </h2>
-
-        <button
-          onClick={handleLogin}
-          style={{
-            padding: "12px 20px",
-            marginTop: 10,
-            background: "#6c5ce7",
-            color: "#fff",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-          }}
-        >
-          Login with Pi
-        </button>
+        {username ? (
+          <>
+            <h2>Welcome to EduPay Africa, {username} 👋</h2>
+            <button
+              onClick={handleLogout}
+              style={{
+                marginTop: 10,
+                padding: "10px 16px",
+                background: "#d63031",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <h2>Login to continue</h2>
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              style={{
+                marginTop: 10,
+                padding: "12px 20px",
+                background: "#6c5ce7",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
+            >
+              {loading ? "Logging in..." : "Login with Pi"}
+            </button>
+          </>
+        )}
       </div>
 
+      {/* 🔽 APP CONTENT */}
       <main className="pb-24 md:pb-20">
         <HeroSection />
         <StudentRegistration />
