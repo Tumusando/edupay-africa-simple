@@ -1,7 +1,12 @@
 export async function POST(req: Request) {
   const { paymentId, txid } = await req.json();
 
-  console.log("Complete:", paymentId, txid);
+  console.log("Completing payment:", paymentId, txid);
 
-  return new Response(JSON.stringify({ success: true }), { status: 200 });
+  return new Response(
+    JSON.stringify({
+      completed: true
+    }),
+    { status: 200 }
+  );
 }
