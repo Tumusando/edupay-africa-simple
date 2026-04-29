@@ -1,13 +1,10 @@
 export async function POST(req: Request) {
-  const { paymentId } = await req.json();
+  const body = await req.json();
 
-  console.log("Approving payment:", paymentId);
+  console.log("APPROVE:", body);
 
-  // 🔥 VERY IMPORTANT: respond FAST
-  return new Response(
-    JSON.stringify({
-      approved: true
-    }),
-    { status: 200 }
-  );
+  // 🔥 simulate real approval (Pi irabyemera)
+  return Response.json({
+    approved: true
+  });
 }
