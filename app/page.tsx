@@ -8,7 +8,7 @@ declare global {
   }
 }
 
-// UI Components (usanzwe ukoresha)
+// UI Components
 import { HeroSection } from "@/components/hero-section";
 import { ServicesManager } from "@/components/services-manager";
 import { StatsSection } from "@/components/stats-section";
@@ -25,46 +25,31 @@ export default function HomePage() {
   const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // 🔥 Init Pi SDK + restore session
+  // Init Pi
   useEffect(() => {
-    const waitForPi = setInterval(() => {
+    const wait = setInterval(() => {
       if (window.Pi) {
-        window.Pi.init({
-          version: "2.0",
-          sandbox: true, // ugumane true muri sandbox
-        });
-        console.log("Pi SDK initialized");
-        clearInterval(waitForPi);
+        window.Pi.init({ version: "2.0", sandbox: true });
+        clearInterval(wait);
       }
     }, 500);
 
-    // restore saved user (if any)
     const saved = localStorage.getItem("pi_user");
     if (saved) setUsername(saved);
 
-    return () => clearInterval(waitForPi);
+    return () => clearInterval(wait);
   }, []);
 
-  // 🔐 Login (RESET mbere yo authenticate)
+  // LOGIN
   const handleLogin = async () => {
     try {
       setLoading(true);
-
-      // 🔥 important: clear previous session
       setUsername(null);
       localStorage.removeItem("pi_user");
 
-      if (!window.Pi) {
-        alert("Pi SDK not ready");
-        setLoading(false);
-        return;
-      }
-
       const auth = await window.Pi.authenticate(
         ["username", "payments"],
-        (payment: any) => {
-          console.log("Incomplete payment:", payment);
-        }
+        () => {}
       );
 
       const user = auth?.user?.username;
@@ -72,87 +57,95 @@ export default function HomePage() {
       if (user) {
         setUsername(user);
         localStorage.setItem("pi_user", user);
-        console.log("Logged in as:", user);
-      } else {
-        alert("Login failed: no user");
       }
     } catch (err) {
-      console.error("Auth error:", err);
       alert("Authentication failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // 🔓 Logout (for next user)
+  // LOGOUT
   const handleLogout = () => {
     setUsername(null);
     localStorage.removeItem("pi_user");
-    alert("Logged out");
+  };
+
+  // 💰 PAYMENT (CONNECTED TO BACKEND)
+  const handlePayment = async () => {
+    try {
+      const paymentData = {
+        amount: 1,
+        memo: "EduPay Test Payment",
+        metadata: { type: "test-payment" },
+      };
+
+      await window.Pi.createPayment(paymentData, {
+        onReadyForServerApproval: async (paymentId: string) => {
+          await fetch("/api/payments/approve", {
+            method: "POST",
+            body: JSON.stringify({ paymentId }),
+          });
+        },
+
+        onReadyForServerCompletion: async (
+          paymentId: string,
+          txid: string
+        ) => {
+          await fetch("/api/payments/complete", {
+            method: "POST",
+            body: JSON.stringify({ paymentId, txid }),
+          });
+
+          alert("Payment successful 🎉");
+        },
+
+        onCancel: () => {
+          alert("Payment cancelled");
+        },
+
+        onError: () => {
+          alert("Payment error");
+        },
+      });
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <MobileNav />
 
-      {/* 🔥 AUTH AREA */}
       <div style={{ textAlign: "center", padding: 20 }}>
         {username ? (
           <>
-            <h2>Welcome to EduPay Africa, {username} 👋</h2>
-            <button
-              onClick={handleLogout}
-              style={{
-                marginTop: 10,
-                padding: "10px 16px",
-                background: "#d63031",
-                color: "#fff",
-                border: "none",
-                borderRadius: 6,
-                cursor: "pointer",
-              }}
-            >
+            <h2>Welcome {username} 👋</h2>
+
+            <button onClick={handlePayment}>
+              Pay with Pi 💰
+            </button>
+
+            <br />
+
+            <button onClick={handleLogout}>
               Logout
             </button>
           </>
         ) : (
-          <>
-            <h2>Login to continue</h2>
-            <button
-              onClick={handleLogin}
-              disabled={loading}
-              style={{
-                marginTop: 10,
-                padding: "12px 20px",
-                background: "#6c5ce7",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-              }}
-            >
-              {loading ? "Logging in..." : "Login with Pi"}
-            </button>
-          </>
+          <button onClick={handleLogin}>
+            {loading ? "Loading..." : "Login with Pi"}
+          </button>
         )}
       </div>
 
-      {/* 🔽 APP CONTENT */}
-      <main className="pb-24 md:pb-20">
+      <main>
         <HeroSection />
         <StudentRegistration />
         <OnlineCoursesPreview />
-
-        <div id="services">
-          <ServicesManager />
-        </div>
-
+        <ServicesManager />
         <StatsSection />
-
-        <div id="features">
-          <FeaturesSection />
-        </div>
-
+        <FeaturesSection />
         <CTASection />
       </main>
 
