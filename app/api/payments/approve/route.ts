@@ -1,7 +1,13 @@
 export async function POST(req: Request) {
   const { paymentId } = await req.json();
 
-  console.log("Approve:", paymentId);
+  console.log("Approving payment:", paymentId);
 
-  return new Response(JSON.stringify({ success: true }), { status: 200 });
+  // 🔥 VERY IMPORTANT: respond FAST
+  return new Response(
+    JSON.stringify({
+      approved: true
+    }),
+    { status: 200 }
+  );
 }
