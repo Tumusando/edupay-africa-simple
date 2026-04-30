@@ -2,18 +2,24 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { paymentId } = body;
+    const { paymentId } = await req.json();
 
-    console.log("APPROVE payment:", paymentId);
-
-    // 👉 Hano ni ho washyiramo Pi Server SDK (production)
-    // ubu ni test simple
-    return NextResponse.json({ approved: true });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Approve failed" },
-      { status: 500 }
+    const res = await fetch(
+      `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Key ${process.env.PI_API_KEY}`,
+        },
+      }
     );
+
+    const data = await res.json();
+    console.log("APPROVED:", data);
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Approve failed" }, { status: 500 });
   }
 }
