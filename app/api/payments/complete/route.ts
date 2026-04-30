@@ -1,21 +1,30 @@
-const PI_API_KEY = process.env.PI_API_KEY;
-
 export async function POST(req: Request) {
-  const { paymentId } = await req.json();
+  try {
+    const { paymentId } = await req.json();
 
-  const res = await fetch(
-    `https://api.minepi.com/v2/payments/${paymentId}/complete`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Key ${PI_API_KEY}`,
-      },
+    const PI_API_KEY = process.env.PI_API_KEY;
+
+    if (!PI_API_KEY) {
+      return new Response("Missing API Key", { status: 500 });
     }
-  );
 
-  const data = await res.json();
+    const response = await fetch(
+      `https://api.minepi.com/v2/payments/${paymentId}/complete`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Key ${PI_API_KEY}`,
+        },
+      }
+    );
 
-  console.log("COMPLETED:", data);
+    const data = await response.json();
 
-  return Response.json(data);
+    console.log("COMPLETED:", data);
+
+    return Response.json(data);
+  } catch (error) {
+    console.error("Complete error:", error);
+    return new Response("Error completing payment", { status: 500 });
+  }
 }
