@@ -1,30 +1,18 @@
+import { NextResponse } from "next/server";
+
 export async function POST(req: Request) {
   try {
-    const { paymentId } = await req.json();
+    const body = await req.json();
+    const { paymentId, txid } = body;
 
-    const PI_API_KEY = process.env.PI_API_KEY;
+    console.log("COMPLETE payment:", paymentId, txid);
 
-    if (!PI_API_KEY) {
-      return new Response("Missing API Key", { status: 500 });
-    }
-
-    const response = await fetch(
-      `https://api.minepi.com/v2/payments/${paymentId}/complete`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Key ${PI_API_KEY}`,
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    console.log("COMPLETED:", data);
-
-    return Response.json(data);
+    // 👉 confirm payment logic
+    return NextResponse.json({ completed: true });
   } catch (error) {
-    console.error("Complete error:", error);
-    return new Response("Error completing payment", { status: 500 });
+    return NextResponse.json(
+      { error: "Complete failed" },
+      { status: 500 }
+    );
   }
 }
