@@ -25,7 +25,7 @@ export default function HomePage() {
   const [username, setUsername] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Init Pi
+  // 🔥 INIT PI SDK
   useEffect(() => {
     const wait = setInterval(() => {
       if (window.Pi) {
@@ -40,7 +40,7 @@ export default function HomePage() {
     return () => clearInterval(wait);
   }, []);
 
-  // LOGIN
+  // 🔐 LOGIN
   const handleLogin = async () => {
     try {
       setLoading(true);
@@ -57,21 +57,24 @@ export default function HomePage() {
       if (user) {
         setUsername(user);
         localStorage.setItem("pi_user", user);
+      } else {
+        alert("Login failed");
       }
     } catch (err) {
+      console.error(err);
       alert("Authentication failed");
     } finally {
       setLoading(false);
     }
   };
 
-  // LOGOUT
+  // 🔓 LOGOUT
   const handleLogout = () => {
     setUsername(null);
     localStorage.removeItem("pi_user");
   };
 
-  // 💰 PAYMENT (CONNECTED TO BACKEND)
+  // 💰 PAYMENT (FIXED VERSION)
   const handlePayment = async () => {
     try {
       const paymentData = {
@@ -82,8 +85,13 @@ export default function HomePage() {
 
       await window.Pi.createPayment(paymentData, {
         onReadyForServerApproval: async (paymentId: string) => {
+          console.log("APPROVAL TRIGGERED:", paymentId);
+
           await fetch("/api/payments/approve", {
             method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({ paymentId }),
           });
         },
@@ -92,24 +100,31 @@ export default function HomePage() {
           paymentId: string,
           txid: string
         ) => {
+          console.log("COMPLETION TRIGGERED:", paymentId, txid);
+
           await fetch("/api/payments/complete", {
             method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
             body: JSON.stringify({ paymentId, txid }),
           });
 
           alert("Payment successful 🎉");
         },
 
-        onCancel: () => {
+        onCancel: (paymentId: string) => {
+          console.log("CANCELLED:", paymentId);
           alert("Payment cancelled");
         },
 
-        onError: () => {
+        onError: (error: any) => {
+          console.error("PAYMENT ERROR:", error);
           alert("Payment error");
         },
       });
     } catch (err) {
-      console.error(err);
+      console.error("Payment failed:", err);
     }
   };
 
@@ -117,28 +132,63 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       <MobileNav />
 
+      {/* AUTH AREA */}
       <div style={{ textAlign: "center", padding: 20 }}>
         {username ? (
           <>
-            <h2>Welcome {username} 👋</h2>
+            <h2>Welcome to EduPay Africa, {username} 👋</h2>
 
-            <button onClick={handlePayment}>
+            <button
+              onClick={handlePayment}
+              style={{
+                marginTop: 10,
+                padding: "12px 20px",
+                background: "#00b894",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+              }}
+            >
               Pay with Pi 💰
             </button>
 
             <br />
 
-            <button onClick={handleLogout}>
+            <button
+              onClick={handleLogout}
+              style={{
+                marginTop: 10,
+                padding: "10px 16px",
+                background: "#d63031",
+                color: "#fff",
+                border: "none",
+                borderRadius: 6,
+                cursor: "pointer",
+              }}
+            >
               Logout
             </button>
           </>
         ) : (
-          <button onClick={handleLogin}>
+          <button
+            onClick={handleLogin}
+            disabled={loading}
+            style={{
+              padding: "12px 20px",
+              background: "#6c5ce7",
+              color: "#fff",
+              border: "none",
+              borderRadius: 8,
+              cursor: "pointer",
+            }}
+          >
             {loading ? "Loading..." : "Login with Pi"}
           </button>
         )}
       </div>
 
+      {/* APP CONTENT */}
       <main>
         <HeroSection />
         <StudentRegistration />
