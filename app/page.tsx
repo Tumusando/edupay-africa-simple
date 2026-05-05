@@ -29,7 +29,7 @@ export default function HomePage() {
   useEffect(() => {
     const wait = setInterval(() => {
       if (window.Pi) {
-        window.Pi.init({ version: "2.0", sandbox: false });
+        window.Pi.init({ version: "2.0", sandbox: true });
         clearInterval(wait);
       }
     }, 500);
