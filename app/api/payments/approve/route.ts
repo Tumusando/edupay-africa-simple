@@ -5,7 +5,7 @@ export async function POST(req: Request) {
     const { paymentId } = await req.json();
 
     const res = await fetch(
-      `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+      `https://api.testnet.minepi.com/v2/payments/${paymentId}/approve`,
       {
         method: "POST",
         headers: {
