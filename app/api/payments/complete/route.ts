@@ -2,9 +2,13 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { paymentId, txid } = await req.json();
+    const body = await req.json();
 
-    const res = await fetch(
+    const { paymentId, txid } = body;
+
+    console.log("Completing payment:", paymentId);
+
+    const response = await fetch(
       `https://api.testnet.minepi.com/v2/payments/${paymentId}/complete`,
       {
         method: "POST",
@@ -16,12 +20,18 @@ export async function POST(req: Request) {
       }
     );
 
-    const data = await res.json();
-    console.log("COMPLETED:", data);
+    const data = await response.json();
+
+    console.log("Pi complete response:", data);
 
     return NextResponse.json(data);
+
   } catch (error) {
-    console.error(error);
-    return NextResponse.json({ error: "Complete failed" }, { status: 500 });
+    console.error("Complete error:", error);
+
+    return NextResponse.json(
+      { error: "Complete failed" },
+      { status: 500 }
+    );
   }
 }
