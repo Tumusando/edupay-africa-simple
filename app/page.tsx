@@ -29,13 +29,22 @@ export default function HomePage() {
   useEffect(() => {
     const wait = setInterval(() => {
       if (window.Pi) {
-        window.Pi.init({ version: "2.0", sandbox: true });
+        window.Pi.init({
+          version: "2.0",
+          sandbox: true,
+        });
+
+        console.log("Pi SDK initialized");
+
         clearInterval(wait);
       }
     }, 500);
 
     const saved = localStorage.getItem("pi_user");
-    if (saved) setUsername(saved);
+
+    if (saved) {
+      setUsername(saved);
+    }
 
     return () => clearInterval(wait);
   }, []);
@@ -44,8 +53,15 @@ export default function HomePage() {
   const handleLogin = async () => {
     try {
       setLoading(true);
+
       setUsername(null);
+
       localStorage.removeItem("pi_user");
+
+      if (!window.Pi) {
+        alert("Pi SDK not loaded");
+        return;
+      }
 
       const auth = await window.Pi.authenticate(
         ["username", "payments"],
@@ -56,12 +72,16 @@ export default function HomePage() {
 
       if (user) {
         setUsername(user);
+
         localStorage.setItem("pi_user", user);
+
+        console.log("Logged in:", user);
       } else {
         alert("Login failed");
       }
     } catch (err) {
-      console.error(err);
+      console.error("AUTH ERROR:", err);
+
       alert("Authentication failed");
     } finally {
       setLoading(false);
@@ -71,60 +91,99 @@ export default function HomePage() {
   // 🔓 LOGOUT
   const handleLogout = () => {
     setUsername(null);
+
     localStorage.removeItem("pi_user");
+
+    alert("Logged out");
   };
 
-  // 💰 PAYMENT (FIXED VERSION)
+  // 💰 PAYMENT
   const handlePayment = async () => {
     try {
+      if (!window.Pi) {
+        alert("Pi SDK not loaded");
+        return;
+      }
+
       const paymentData = {
         amount: 1,
         memo: "EduPay Test Payment",
-        metadata: { type: "test-payment" },
+        metadata: {
+          type: "test-payment",
+        },
       };
 
       await window.Pi.createPayment(paymentData, {
+        // ✅ APPROVE PAYMENT
         onReadyForServerApproval: async (paymentId: string) => {
-          console.log("APPROVAL TRIGGERED:", paymentId);
+          console.log("APPROVING PAYMENT:", paymentId);
 
-          await fetch("/api/payments/approve", {
+          const response = await fetch("/api/payments/approve", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ paymentId }),
+            body: JSON.stringify({
+              paymentId,
+            }),
           });
+
+          const data = await response.json();
+
+          console.log("APPROVE RESPONSE:", data);
+
+          if (!response.ok) {
+            throw new Error("Payment approval failed");
+          }
         },
 
+        // ✅ COMPLETE PAYMENT
         onReadyForServerCompletion: async (
           paymentId: string,
           txid: string
         ) => {
-          console.log("COMPLETION TRIGGERED:", paymentId, txid);
+          console.log("COMPLETING PAYMENT:", paymentId, txid);
 
-          await fetch("/api/payments/complete", {
+          const response = await fetch("/api/payments/complete", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ paymentId, txid }),
+            body: JSON.stringify({
+              paymentId,
+              txid,
+            }),
           });
+
+          const data = await response.json();
+
+          console.log("COMPLETE RESPONSE:", data);
+
+          if (!response.ok) {
+            throw new Error("Payment completion failed");
+          }
 
           alert("Payment successful 🎉");
         },
 
+        // ❌ CANCEL
         onCancel: (paymentId: string) => {
-          console.log("CANCELLED:", paymentId);
+          console.log("PAYMENT CANCELLED:", paymentId);
+
           alert("Payment cancelled");
         },
 
+        // ❌ ERROR
         onError: (error: any) => {
           console.error("PAYMENT ERROR:", error);
+
           alert("Payment error");
         },
       });
     } catch (err) {
-      console.error("Payment failed:", err);
+      console.error("PAYMENT FAILED:", err);
+
+      alert("Payment failed");
     }
   };
 
