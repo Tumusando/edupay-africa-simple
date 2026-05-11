@@ -2,12 +2,9 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { paymentId } = body;
+    const { paymentId } = await req.json();
 
-    console.log("Approving payment:", paymentId);
-
-    const response = await fetch(
+    const res = await fetch(
       `https://api.testnet.minepi.com/v2/payments/${paymentId}/approve`,
       {
         method: "POST",
@@ -18,17 +15,21 @@ export async function POST(req: Request) {
       }
     );
 
-    const data = await response.json();
+    const data = await res.json();
 
-    console.log("Pi approve response:", data);
+    if (!res.ok) {
+      console.error("PI APPROVE ERROR:", data);
+      return NextResponse.json(
+        { error: "Approve failed", details: data },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json(data);
+    return NextResponse.json({ success: true, data });
 
   } catch (error) {
-    console.error("Approve error:", error);
-
     return NextResponse.json(
-      { error: "Approve failed" },
+      { error: "Server error" },
       { status: 500 }
     );
   }
