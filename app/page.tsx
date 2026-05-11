@@ -101,12 +101,12 @@ export default function HomePage() {
   const handlePayment = async () => {
     try {
       if (!window.Pi) {
-        alert("Pi SDK not loaded");
+        alert("Pi SDK not ready");
         return;
       }
 
       const paymentData = {
-        amount: 1,
+        amount: 0.01,
         memo: "EduPay Test Payment",
         metadata: {
           type: "test-payment",
@@ -116,25 +116,19 @@ export default function HomePage() {
       await window.Pi.createPayment(paymentData, {
         // ✅ APPROVE PAYMENT
         onReadyForServerApproval: async (paymentId: string) => {
-          console.log("APPROVING PAYMENT:", paymentId);
+          console.log("Approving payment:", paymentId);
 
-          const response = await fetch("/api/payments/approve", {
+          const res = await fetch("/api/payments/approve", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              paymentId,
-            }),
+            body: JSON.stringify({ paymentId }),
           });
 
-          const data = await response.json();
+          const data = await res.json();
 
-          console.log("APPROVE RESPONSE:", data);
-
-          if (!response.ok) {
-            throw new Error("Payment approval failed");
-          }
+          console.log("Approve response:", data);
         },
 
         // ✅ COMPLETE PAYMENT
@@ -142,9 +136,9 @@ export default function HomePage() {
           paymentId: string,
           txid: string
         ) => {
-          console.log("COMPLETING PAYMENT:", paymentId, txid);
+          console.log("Completing payment:", paymentId, txid);
 
-          const response = await fetch("/api/payments/complete", {
+          const res = await fetch("/api/payments/complete", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -155,33 +149,29 @@ export default function HomePage() {
             }),
           });
 
-          const data = await response.json();
+          const data = await res.json();
 
-          console.log("COMPLETE RESPONSE:", data);
-
-          if (!response.ok) {
-            throw new Error("Payment completion failed");
-          }
+          console.log("Complete response:", data);
 
           alert("Payment successful 🎉");
         },
 
         // ❌ CANCEL
         onCancel: (paymentId: string) => {
-          console.log("PAYMENT CANCELLED:", paymentId);
+          console.log("Payment cancelled:", paymentId);
 
           alert("Payment cancelled");
         },
 
         // ❌ ERROR
         onError: (error: any) => {
-          console.error("PAYMENT ERROR:", error);
+          console.error("Payment error:", error);
 
-          alert("Payment error");
+          alert("Payment failed");
         },
       });
-    } catch (err) {
-      console.error("PAYMENT FAILED:", err);
+    } catch (error) {
+      console.error("Create payment failed:", error);
 
       alert("Payment failed");
     }
