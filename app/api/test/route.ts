@@ -1,3 +1,5 @@
 export async function GET() {
-  return new Response("API WORKING");
+  return Response.json({
+    success: true,
+  });
 }
