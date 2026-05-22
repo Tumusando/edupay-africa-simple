@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { paymentId, txid } = await req.json();
+    const body = await req.json();
+
+    const { paymentId, txid } = body;
 
     console.log("Completing payment:", paymentId);
 
@@ -14,7 +16,9 @@ export async function POST(req: Request) {
           Authorization: `Key ${process.env.PI_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ txid }),
+        body: JSON.stringify({
+          txid,
+        }),
       }
     );
 
@@ -22,23 +26,18 @@ export async function POST(req: Request) {
 
     console.log("Complete response:", data);
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: data },
-        { status: response.status }
-      );
-    }
+    return NextResponse.json(data);
 
-    return NextResponse.json({
-      success: true,
-      data,
-    });
   } catch (error) {
     console.error("Complete error:", error);
 
     return NextResponse.json(
-      { error: "Complete failed" },
-      { status: 500 }
+      {
+        error: "Complete failed",
+      },
+      {
+        status: 500,
+      }
     );
   }
 }
