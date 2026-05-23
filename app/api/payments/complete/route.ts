@@ -4,12 +4,20 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    const { paymentId, txid } = body;
+    const paymentId = body.paymentId;
+    const txid = body.txid;
+
+    if (!paymentId || !txid) {
+      return NextResponse.json(
+        { error: "Missing data" },
+        { status: 400 }
+      );
+    }
 
     console.log("Completing payment:", paymentId);
 
     const response = await fetch(
-      `https://api.testnet.minepi.com/v2/payments/${paymentId}/complete`,
+      `https://api.minepi.com/v2/payments/${paymentId}/complete`,
       {
         method: "POST",
         headers: {
@@ -26,18 +34,26 @@ export async function POST(req: Request) {
 
     console.log("Complete response:", data);
 
-    return NextResponse.json(data);
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data },
+        { status: response.status }
+      );
+    }
 
-  } catch (error) {
-    console.error("Complete error:", error);
+    return NextResponse.json({
+      success: true,
+      data,
+    });
+
+  } catch (error: any) {
+    console.error("COMPLETE ERROR:", error);
 
     return NextResponse.json(
       {
-        error: "Complete failed",
+        error: error.message || "Complete failed",
       },
-      {
-        status: 500,
-      }
+      { status: 500 }
     );
   }
 }
