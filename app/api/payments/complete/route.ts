@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     console.log("Completing payment:", paymentId);
 
     const response = await fetch(
-      `https://api.minepi.com/v2/payments/${paymentId}/complete`,
+      `https://api.testnet.minepi.com/v2/payments/${paymentId}/complete`,
       {
         method: "POST",
         headers: {
@@ -45,7 +45,6 @@ export async function POST(req: Request) {
       success: true,
       data,
     });
-
   } catch (error: any) {
     console.error("COMPLETE ERROR:", error);
 
