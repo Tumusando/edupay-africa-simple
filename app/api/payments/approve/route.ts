@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     console.log("Approving payment:", paymentId);
 
     const response = await fetch(
-      `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+      `https://api.testnet.minepi.com/v2/payments/${paymentId}/approve`,
       {
         method: "POST",
         headers: {
@@ -41,7 +41,6 @@ export async function POST(req: Request) {
       success: true,
       data,
     });
-
   } catch (error: any) {
     console.error("APPROVE ERROR:", error);
 
