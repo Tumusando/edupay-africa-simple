@@ -1,54 +1,24 @@
-import { NextResponse } from "next/server";
+onReadyForServerApproval: async (paymentId: string) => {
+  console.log("STEP 1 - paymentId:", paymentId);
 
-export async function POST(req: Request) {
   try {
-    const body = await req.json();
-
-    const paymentId = body.paymentId;
-
-    if (!paymentId) {
-      return NextResponse.json(
-        { error: "Missing paymentId" },
-        { status: 400 }
-      );
-    }
-
-    console.log("Approving payment:", paymentId);
-
-    const response = await fetch(
-      `https://api.testnet.minepi.com/v2/payments/${paymentId}/approve`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Key ${process.env.PI_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const data = await response.json();
-
-    console.log("Approve response:", data);
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: data },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data,
-    });
-  } catch (error: any) {
-    console.error("APPROVE ERROR:", error);
-
-    return NextResponse.json(
-      {
-        error: error.message || "Approve failed",
+    const res = await fetch("/api/payments/approve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      { status: 500 }
-    );
+      body: JSON.stringify({ paymentId }),
+    });
+
+    console.log("STEP 2 - status:", res.status);
+
+    const data = await res.json();
+
+    console.log("STEP 3 - data:", data);
+
+    alert("Approve status: " + res.status);
+  } catch (err) {
+    console.error("STEP 4 - approve error:", err);
+    alert("Approve fetch failed");
   }
-}
+},
