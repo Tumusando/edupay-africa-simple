@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-
-    const paymentId = body.paymentId;
-    const txid = body.txid;
+    const { paymentId, txid } = await req.json();
 
     if (!paymentId || !txid) {
       return NextResponse.json(
@@ -22,26 +19,15 @@ export async function POST(req: Request) {
           Authorization: `Key ${process.env.PI_API_KEY}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          txid,
-        }),
+        body: JSON.stringify({ txid }),
       }
     );
 
     const data = await response.json();
 
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: data },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data,
+    return NextResponse.json(data, {
+      status: response.status,
     });
-
   } catch (error: any) {
     return NextResponse.json(
       {

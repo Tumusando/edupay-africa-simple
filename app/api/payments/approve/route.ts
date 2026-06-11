@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-
-    const paymentId = body.paymentId;
+    const { paymentId } = await req.json();
 
     if (!paymentId) {
       return NextResponse.json(
@@ -13,10 +11,8 @@ export async function POST(req: Request) {
       );
     }
 
-    console.log("Approving payment:", paymentId);
-
     const response = await fetch(
-      `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+      `https://api.testnet.minepi.com/v2/payments/${paymentId}/approve`,
       {
         method: "POST",
         headers: {
@@ -28,23 +24,10 @@ export async function POST(req: Request) {
 
     const data = await response.json();
 
-    console.log("Approve response:", data);
-
-    if (!response.ok) {
-      return NextResponse.json(
-        { error: data },
-        { status: response.status }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      data,
+    return NextResponse.json(data, {
+      status: response.status,
     });
-
   } catch (error: any) {
-    console.error("APPROVE ERROR:", error);
-
     return NextResponse.json(
       {
         error: error.message || "Approve failed",
