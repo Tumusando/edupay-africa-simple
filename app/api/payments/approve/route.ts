@@ -1,17 +1,55 @@
+import { NextResponse } from "next/server";
+
 export async function POST(req: Request) {
-  const { paymentId } = await req.json();
+  try {
+    const body = await req.json();
 
-  const res = await fetch(
-    `https://api.minepi.com/v2/payments/${paymentId}/approve`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Key ${process.env.PI_API_KEY}`,
-      },
+    const paymentId = body.paymentId;
+
+    if (!paymentId) {
+      return NextResponse.json(
+        { error: "Missing paymentId" },
+        { status: 400 }
+      );
     }
-  );
 
-  const data = await res.json();
+    console.log("Approving payment:", paymentId);
 
-  return Response.json(data);
+    const response = await fetch(
+      `https://api.minepi.com/v2/payments/${paymentId}/approve`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Key ${process.env.PI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    const data = await response.json();
+
+    console.log("Approve response:", data);
+
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: data },
+        { status: response.status }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data,
+    });
+
+  } catch (error: any) {
+    console.error("APPROVE ERROR:", error);
+
+    return NextResponse.json(
+      {
+        error: error.message || "Approve failed",
+      },
+      { status: 500 }
+    );
+  }
 }
